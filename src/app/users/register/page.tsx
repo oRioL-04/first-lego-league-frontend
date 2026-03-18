@@ -40,7 +40,7 @@ export default function RegistrationPage() {
         >
             <form onSubmit={handleSubmit(onSubmit)} className="mx-auto grid max-w-xl gap-5">
                 <div className="grid gap-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="username">Username</Label>
                     <Input
                         id="username"
                         {...register("username", { required: "Username is required" })}
@@ -75,7 +75,7 @@ export default function RegistrationPage() {
                         type="password"
                         {...register("password", {
                             required: "Password is required",
-                            minLength: { value: 6, message: "Minimum 8 characters" },
+                            minLength: { value: 6, message: "Minimum 6 characters" },
                             maxLength: { value: 256, message: "Maximum 256 characters" }
                         })}
                     />

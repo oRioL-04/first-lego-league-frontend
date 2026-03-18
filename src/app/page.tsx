@@ -31,7 +31,7 @@ export default function Home() {
           <div className="page-eyebrow">Competition hub</div>
           <h2 className="section-title">Platform modules</h2>
           <p className="section-copy max-w-2xl">
-            The same routes and actions as before, presented in a cleaner layout.
+            Explore the main areas of the platform for teams, editions and innovation projects.
           </p>
         </div>
 

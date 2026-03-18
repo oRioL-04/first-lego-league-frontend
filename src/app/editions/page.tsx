@@ -19,15 +19,14 @@ export default async function EditionsPage() {
         <PageShell
             eyebrow="Competition archive"
             title="Editions"
-            description="Browse the yearly editions of the competition with the same data flow and visibility rules already present in the application."
+            description="Browse the yearly editions of FIRST LEGO League, including venue and season details."
         >
             <div className="space-y-6">
                 <div className="space-y-3">
                     <div className="page-eyebrow">Edition list</div>
                     <h2 className="section-title">Season overview</h2>
                     <p className="section-copy max-w-3xl">
-                        This section preserves the original loading, error and empty-state
-                        behavior while presenting each edition with a clearer editorial layout.
+                        Each card highlights the season, venue and published information for that edition.
                     </p>
                 </div>
 

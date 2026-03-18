@@ -6,14 +6,13 @@ export default function TeamsPage() {
         <PageShell
             eyebrow="Team management"
             title="Teams"
-            description="This module keeps the original placeholder behavior while adopting the same visual language as the rest of the platform."
+            description="Follow team participation and competition activity from one dedicated area."
         >
             <div className="space-y-5">
-                <div className="page-eyebrow">Placeholder module</div>
-                <h2 className="section-title">Module under construction.</h2>
+                <div className="page-eyebrow">Upcoming section</div>
+                <h2 className="section-title">Team area in preparation.</h2>
                 <p className="section-copy max-w-3xl">
-                    The interface now feels part of the same event system, but no actions,
-                    routes or button behavior have been changed in this placeholder view.
+                    This area is reserved for team lists, participation details and related updates.
                 </p>
                 <Button
                     type="button"
@@ -21,7 +20,7 @@ export default function TeamsPage() {
                     variant="secondary"
                     className="fll-disabled mt-2"
                 >
-                    Team list coming soon
+                    Team list unavailable
                 </Button>
             </div>
         </PageShell>

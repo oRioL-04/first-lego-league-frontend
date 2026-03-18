@@ -11,15 +11,14 @@ export default async function UsersPage() {
         <PageShell
             eyebrow="People directory"
             title="Users"
-            description="The directory keeps the same data and links as before, now presented through a cleaner event-style interface."
+            description="Browse the registered members of the platform and open each participant profile."
         >
             <div className="space-y-6">
                 <div className="space-y-3">
                     <div className="page-eyebrow">Registered users</div>
                     <h2 className="section-title">Directory</h2>
                     <p className="section-copy max-w-3xl">
-                        User cards are purely visual. Clicking a username still takes you to
-                        the same detail page and preserves the existing behavior.
+                        Select a user to view profile details and related records.
                     </p>
                 </div>
 

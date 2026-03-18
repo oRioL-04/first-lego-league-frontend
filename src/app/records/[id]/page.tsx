@@ -19,7 +19,7 @@ export default async function RecordPage(props: Readonly<RecordPageProps>) {
         <PageShell
             eyebrow="Record detail"
             title="Record"
-            description="The detail view preserves the same conditional metadata rendering while adopting the new event-driven visual system."
+            description="View the published information associated with this record."
         >
             <Card className="w-full border-border/90">
                 <CardHeader>

@@ -6,14 +6,13 @@ export default function ScientificProjectsPage() {
         <PageShell
             eyebrow="Innovation project"
             title="Scientific Projects"
-            description="The scientific projects area stays as the original placeholder, with only the presentation updated to match the new competition aesthetic."
+            description="Explore innovation projects linked to each FIRST LEGO League edition."
         >
             <div className="space-y-5">
-                <div className="page-eyebrow">Placeholder module</div>
-                <h2 className="section-title">Module under construction.</h2>
+                <div className="page-eyebrow">Upcoming section</div>
+                <h2 className="section-title">Project area in preparation.</h2>
                 <p className="section-copy max-w-3xl">
-                    FIRST LEGO League innovation projects deserve a stronger visual setting,
-                    but the module is still intentionally read-only and disabled here.
+                    This area is reserved for project submissions, ideas and season-related documentation.
                 </p>
                 <Button
                     type="button"
@@ -21,7 +20,7 @@ export default function ScientificProjectsPage() {
                     variant="secondary"
                     className="fll-disabled mt-2"
                 >
-                    Scientific project list coming soon
+                    Scientific project list unavailable
                 </Button>
             </div>
         </PageShell>

@@ -30,7 +30,7 @@ export default function Loginbar() {
             try {
                 const service = new UsersService(clientAuthProvider);
                 const currentUser = await service.getCurrentUser();
-                setUser(currentUser ?? null);
+                if (mounted) setUser(currentUser ?? null);
             } catch {
                 if (mounted) setUser(null);
             }

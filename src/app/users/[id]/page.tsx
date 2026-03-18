@@ -25,7 +25,7 @@ export default async function UsersPage(props: Readonly<UsersPageProps>) {
         <PageShell
             eyebrow="Participant profile"
             title={user.username}
-            description="User details and associated records keep their original fetch and rendering behavior, now presented with a clearer hierarchy."
+            description="Profile information and related records for this participant."
         >
             <div className="space-y-8">
                 <div className="space-y-3">

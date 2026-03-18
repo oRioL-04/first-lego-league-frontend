@@ -17,6 +17,17 @@ type FormValues = {
     password: string;
 };
 
+function toBase64(value: string) {
+    const bytes = new TextEncoder().encode(value);
+    let binary = "";
+
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
+    }
+
+    return btoa(binary);
+}
+
 export default function LoginPage() {
     const router = useRouter();
     const { setUser } = useAuth();
@@ -25,7 +36,7 @@ export default function LoginPage() {
 
     async function login(username: string, password: string) {
         setErrorMessage(null);
-        const base64 = Buffer.from(`${username}:${password}`).toString('base64');
+        const base64 = toBase64(`${username}:${password}`);
         const authorization = `Basic ${base64}`;
         setCookie(AUTH_COOKIE_NAME, authorization, {
             path: "/",
@@ -55,7 +66,11 @@ export default function LoginPage() {
         >
             <form onSubmit={handleSubmit(onSubmit)} className="mx-auto grid max-w-xl gap-5">
                 {errorMessage && (
-                    <p className="border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                    <p
+                        role="alert"
+                        aria-live="assertive"
+                        className="border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                    >
                         {errorMessage}
                     </p>
                 )}
@@ -85,7 +100,7 @@ export default function LoginPage() {
                 </div>
 
                 <Button type="submit" className="mt-2 w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "logging in..." : "login"}
+                    {isSubmitting ? "Logging in..." : "Login"}
                 </Button>
             </form>
         </AuthPageShell>
