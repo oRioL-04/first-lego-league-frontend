@@ -22,7 +22,7 @@ function toBase64(value: string) {
     let binary = "";
 
     for (const byte of bytes) {
-        binary += String.fromCharCode(byte);
+        binary += String.fromCodePoint(byte);
     }
 
     return btoa(binary);

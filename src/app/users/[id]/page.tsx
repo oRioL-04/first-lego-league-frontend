@@ -10,6 +10,14 @@ interface UsersPageProps {
     params: Promise<{ id: string }>;
 }
 
+function getRecordHref(recordUri: string) {
+    const sanitizedUri = recordUri.split(/[?#]/, 1)[0] ?? "";
+    const segments = sanitizedUri.split("/").filter(Boolean);
+    const recordId = segments.at(-1);
+
+    return recordId ? `/records/${recordId}` : "/records";
+}
+
 export default async function UsersPage(props: Readonly<UsersPageProps>) {
     const userService = new UsersService(serverAuthProvider)
     const recordService = new RecordService(serverAuthProvider)
@@ -50,7 +58,10 @@ export default async function UsersPage(props: Readonly<UsersPageProps>) {
                                 <CardHeader>
                                     <div className="list-kicker">Record</div>
                                     <CardTitle className="text-xl">
-                                        <Link href={record.uri} className="hover:text-primary">
+                                        <Link
+                                            href={getRecordHref(record.uri)}
+                                            className="hover:text-primary"
+                                        >
                                             {record.name}
                                         </Link>
                                     </CardTitle>

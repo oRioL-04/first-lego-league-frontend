@@ -24,7 +24,7 @@ export default function Navbar() {
                     <span className="block h-8 w-1 bg-primary" />
                     <div className="min-w-0">
                         <div className="text-[0.68rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                            Catalunya robotics
+                            Catalunya Robotics
                         </div>
                         <div className="truncate text-lg font-semibold tracking-[-0.03em] text-foreground">
                             First LEGO League
