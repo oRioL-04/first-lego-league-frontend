@@ -11,7 +11,8 @@ export class UsersService {
     }
 
     async getUserById(id: string): Promise<User> {
-        return fetchHalResource<User>(`/users/${id}`, this.authStrategy);
+        const userId = encodeURIComponent(id);
+        return fetchHalResource<User>(`/users/${userId}`, this.authStrategy);
     }
 
     async getCurrentUser(): Promise<User | null> {

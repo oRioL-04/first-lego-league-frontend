@@ -99,13 +99,47 @@ export async function updateHalResource<T>(
 }
 
 /**
- * Safely parses response body as HAL+JSON, returning null for 204 No Content responses
+ * Safely parses response body as HAL+JSON, returning null for empty responses
+ * Handles 204 No Content, empty bodies, and invalid JSON gracefully
+ * @param res - HTTP Response object
+ * @returns Parsed HAL Resource or null for empty responses
+ * @throws ApiError if JSON parsing fails
  */
 async function parseResponseBody(res: Response): Promise<Resource | null> {
-    if (res.status === 204 || res.headers.get("content-length") === "0") {
+    // Check for explicit no-content status
+    if (res.status === 204) {
         return null;
     }
-    return halfred.parse(await res.json());
+    
+    // Check Content-Length header
+    const contentLength = res.headers.get("content-length");
+    if (contentLength === "0") {
+        return null;
+    }
+    
+    // Clone response to peek at body without consuming it
+    const clonedRes = res.clone();
+    const text = await clonedRes.text();
+    
+    // Treat empty or whitespace-only bodies as null
+    if (!text || text.trim() === "") {
+        return null;
+    }
+    
+    // Parse JSON with explicit SyntaxError handling
+    try {
+        return halfred.parse(await res.json());
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            throw new ApiError(
+                "Server returned invalid JSON response",
+                res.status,
+                true,
+                error
+            );
+        }
+        throw error;
+    }
 }
 
 /**
@@ -161,134 +195,97 @@ async function handleApiError(error: unknown, res?: Response): Promise<never> {
     throw new ApiError("An unexpected error occurred. Please try again.", undefined, true, error);
 }
 
-export async function getHal(path: string, authProvider: { getAuth: () => Promise<string | null> }): Promise<Resource> {
-    const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-    const authorization = await authProvider.getAuth();
+/**
+ * Executes a HAL HTTP request with common error handling
+ * @param config - Request configuration
+ * @returns Resource or null for 204 responses
+ */
+async function executeHalRequest(config: {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    path: string;
+    authProvider: { getAuth: () => Promise<string | null> };
+    body?: Resource;
+}): Promise<Resource | null> {
+    const url = config.path.startsWith("http") ? config.path : `${API_BASE_URL}${config.path}`;
+    const authorization = await config.authProvider.getAuth();
+    
+    const headers: HeadersInit = {
+        "Accept": "application/hal+json",
+        ...(authorization ? { Authorization: authorization } : {}),
+    };
+    
+    // Add Content-Type for methods with body
+    if (config.body) {
+        headers["Content-Type"] = "application/json";
+    }
     
     try {
         const res = await fetch(url, {
-            headers: {
-                "Accept": "application/hal+json",
-                ...(authorization ? { Authorization: authorization } : {}),
-            },
+            method: config.method,
+            headers,
+            ...(config.body ? { body: JSON.stringify(config.body) } : {}),
             cache: "no-store",
         });
         
         if (!res.ok) {
             await handleApiError(new Error(`HTTP ${res.status}`), res);
-            // TypeScript doesn't know handleApiError always throws, so we need this line
             throw new Error("Unreachable");
         }
         
-        return halfred.parse(await res.json());
+        // GET returns parsed Resource directly, others may return null (204)
+        if (config.method === 'GET') {
+            // Use parseResponseBody for consistent empty body handling
+            const resource = await parseResponseBody(res);
+            if (!resource) {
+                throw new ApiError(
+                    "GET request returned empty response",
+                    res.status,
+                    true
+                );
+            }
+            return resource;
+        }
+        
+        return await parseResponseBody(res);
     } catch (error) {
-        // If it's already a custom error, rethrow it
         if (error instanceof ApiError) {
             throw error;
         }
-        // Otherwise, handle it as a network error
         await handleApiError(error);
-        // TypeScript doesn't know handleApiError always throws, so we need this line
         throw new Error("Unreachable");
     }
+}
+
+export async function getHal(path: string, authProvider: { getAuth: () => Promise<string | null> }): Promise<Resource> {
+    return await executeHalRequest({ 
+        method: 'GET', 
+        path, 
+        authProvider 
+    }) as Resource;
 }
 
 export async function putHal(path: string, body: Resource, authProvider: { getAuth: () => Promise<string | null> }): Promise<Resource | null> {
-    const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-    const authorization = await authProvider.getAuth();
-    
-    try {
-        const res = await fetch(url, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/hal+json",
-                ...(authorization ? { Authorization: authorization } : {}),
-            },
-            body: JSON.stringify(body),
-            cache: "no-store",
-        });
-        
-        if (!res.ok) {
-            await handleApiError(new Error(`HTTP ${res.status}`), res);
-            throw new Error("Unreachable");
-        }
-        
-        return await parseResponseBody(res);
-    } catch (error) {
-        // If it's already a custom error, rethrow it
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        // Otherwise, handle it as a network error
-        await handleApiError(error);
-        // TypeScript doesn't know handleApiError always throws, so we need this line
-        throw new Error("Unreachable");
-    }
+    return await executeHalRequest({ 
+        method: 'PUT', 
+        path, 
+        authProvider, 
+        body 
+    });
 }
 
 export async function deleteHal(path: string, authProvider: { getAuth: () => Promise<string | null> }): Promise<Resource | null> {
-    const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-    const authorization = await authProvider.getAuth();
-    
-    try {
-        const res = await fetch(url, {
-            method: "DELETE",
-            headers: {
-                "Accept": "application/hal+json",
-                ...(authorization ? { Authorization: authorization } : {}),
-            },
-            cache: "no-store",
-        });
-        
-        if (!res.ok) {
-            await handleApiError(new Error(`HTTP ${res.status}`), res);
-            throw new Error("Unreachable");
-        }
-        
-        return await parseResponseBody(res);
-    } catch (error) {
-        // If it's already a custom error, rethrow it
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        // Otherwise, handle it as a network error
-        await handleApiError(error);
-        // TypeScript doesn't know handleApiError always throws, so we need this line
-        throw new Error("Unreachable");
-    }
+    return await executeHalRequest({ 
+        method: 'DELETE', 
+        path, 
+        authProvider 
+    });
 }
 
 export async function postHal(path: string, body: Resource, authProvider: { getAuth: () => Promise<string | null> }): Promise<Resource | null> {
-    const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-    const authorization = await authProvider.getAuth();
-    
-    try {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/hal+json",
-                ...(authorization ? { Authorization: authorization } : {}),
-            },
-            body: JSON.stringify(body),
-            cache: "no-store",
-        });
-        
-        if (!res.ok) {
-            await handleApiError(new Error(`HTTP ${res.status}`), res);
-            throw new Error("Unreachable");
-        }
-        
-        return await parseResponseBody(res);
-    } catch (error) {
-        // If it's already a custom error, rethrow it
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        // Otherwise, handle it as a network error
-        await handleApiError(error);
-        // TypeScript doesn't know handleApiError always throws, so we need this line
-        throw new Error("Unreachable");
-    }
+    return await executeHalRequest({ 
+        method: 'POST', 
+        path, 
+        authProvider, 
+        body 
+    });
 }

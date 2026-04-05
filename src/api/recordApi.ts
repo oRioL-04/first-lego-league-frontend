@@ -12,12 +12,14 @@ export class RecordService {
     }
 
     async getRecordById(id: string): Promise<Record> {
-        return fetchHalResource<Record>(`/records/${id}`, this.authStrategy);
+        const recordId = encodeURIComponent(id);
+        return fetchHalResource<Record>(`/records/${recordId}`, this.authStrategy);
     }
 
     async getRecordsByOwnedBy(owner: User): Promise<Record[]> {
+        const ownerUri = encodeURIComponent(owner.uri ?? '');
         return fetchHalCollection<Record>(
-            `/records/search/findByOwnedBy?user=${owner.uri}`, 
+            `/records/search/findByOwnedBy?user=${ownerUri}`, 
             this.authStrategy, 
             'records'
         );
