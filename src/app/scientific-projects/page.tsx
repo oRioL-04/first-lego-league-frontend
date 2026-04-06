@@ -1,7 +1,10 @@
 import { ScientificProjectsService } from "@/api/scientificProjectApi";
 import PageShell from "@/app/components/page-shell";
+import ErrorAlert from "@/app/components/error-alert";
+import EmptyState from "@/app/components/empty-state";
 import { serverAuthProvider } from "@/lib/authProvider";
 import { ScientificProject } from "@/types/scientificProject";
+import { parseErrorMessage } from "@/types/errors";
 
 function ScientificProjectCard({ project, index }: Readonly<{ project: ScientificProject; index: number }>) {
     return (
@@ -33,7 +36,7 @@ export default async function ScientificProjectsPage() {
         projects = await service.getScientificProjects();
     } catch (e) {
         console.error("Failed to fetch scientific projects:", e);
-        error = "Failed to load scientific projects.";
+        error = parseErrorMessage(e);
     }
 
     return (
@@ -51,25 +54,24 @@ export default async function ScientificProjectsPage() {
                     </p>
                 </div>
 
-                {error && (
-                    <p className="border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
-                        {error}
-                    </p>
-                )}
+                {error && <ErrorAlert message={error} />}
 
                 {!error && projects.length === 0 && (
-                    <p className="border border-border bg-background/80 px-4 py-3 text-sm text-muted-foreground">
-                        No scientific projects found.
-                    </p>
+                    <EmptyState
+                        title="No scientific projects found"
+                        description="There are currently no scientific projects available to display."
+                    />
                 )}
 
-                <ul className="list-grid">
-                    {projects.map((project, index) => (
-                        <li key={project.uri ?? index}>
-                            <ScientificProjectCard project={project} index={index} />
-                        </li>
-                    ))}
-                </ul>
+                {!error && projects.length > 0 && (
+                    <ul className="list-grid">
+                        {projects.map((project, index) => (
+                            <li key={project.uri ?? index}>
+                                <ScientificProjectCard project={project} index={index} />
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </PageShell>
     );

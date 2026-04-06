@@ -2,12 +2,15 @@
 
 import { UsersService } from "@/api/userApi";
 import AuthPageShell from "@/app/components/auth-page-shell";
+import ErrorAlert from "@/app/components/error-alert";
 import { Button } from "@/app/components/button";
 import { Input } from "@/app/components/input";
 import { Label } from "@/app/components/label";
 import { clientAuthProvider } from "@/lib/authProvider";
 import { User } from "@/types/user";
+import { parseErrorMessage } from "@/types/errors";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 type FormValues = {
@@ -17,7 +20,7 @@ type FormValues = {
 };
 
 export default function RegistrationPage() {
-    const service = new UsersService(clientAuthProvider)
+    const service = new UsersService(clientAuthProvider);
     const {
         register,
         handleSubmit,
@@ -25,11 +28,17 @@ export default function RegistrationPage() {
     } = useForm<FormValues>();
 
     const router = useRouter();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const onSubmit: SubmitHandler<FormValues> = (data) => {
-        service.createUser(data as User).then(() => {
-            router.push("/login");
-        })
+    const onSubmit: SubmitHandler<FormValues> = async (data) => {
+        setErrorMessage(null);
+        return service.createUser(data as User)
+            .then(() => {
+                router.push("/login");
+            })
+            .catch((error) => {
+                setErrorMessage(parseErrorMessage(error));
+            });
     };
 
     return (
@@ -39,6 +48,7 @@ export default function RegistrationPage() {
             description="Create your account and continue to login."
         >
             <form onSubmit={handleSubmit(onSubmit)} className="mx-auto grid max-w-xl gap-5">
+                {errorMessage && <ErrorAlert message={errorMessage} />}
                 <div className="grid gap-2">
                     <Label htmlFor="username">Username</Label>
                     <Input

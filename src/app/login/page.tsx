@@ -3,10 +3,12 @@
 import { UsersService } from "@/api/userApi";
 import { useAuth } from "@/app/components/authentication";
 import AuthPageShell from "@/app/components/auth-page-shell";
+import ErrorAlert from "@/app/components/error-alert";
 import { Button } from "@/app/components/button";
 import { Input } from "@/app/components/input";
 import { Label } from "@/app/components/label";
 import { AUTH_COOKIE_NAME, clientAuthProvider } from "@/lib/authProvider";
+import { AuthenticationError, parseErrorMessage } from "@/types/errors";
 import { deleteCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -53,10 +55,15 @@ export default function LoginPage() {
     const onSubmit: SubmitHandler<FormValues> = (data) => {
         login(data.username, data.password).then(() => {
             router.push(`/users/${data.username}`);
-        }).catch(() => {
+        }).catch((error) => {
             deleteCookie(AUTH_COOKIE_NAME);
             localStorage.removeItem(AUTH_COOKIE_NAME);
-            setErrorMessage("Login failed");
+            
+            if (error instanceof AuthenticationError) {
+                setErrorMessage("Invalid username or password. Please try again.");
+            } else {
+                setErrorMessage(parseErrorMessage(error));
+            }
         });
     };
 
@@ -67,15 +74,7 @@ export default function LoginPage() {
             description="Sign in to access your profile and protected routes."
         >
             <form onSubmit={handleSubmit(onSubmit)} className="mx-auto grid max-w-xl gap-5">
-                {errorMessage && (
-                    <p
-                        role="alert"
-                        aria-live="assertive"
-                        className="border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-                    >
-                        {errorMessage}
-                    </p>
-                )}
+                {errorMessage && <ErrorAlert message={errorMessage} />}
                 <div className="grid gap-2">
                     <Label htmlFor="username">Username</Label>
                     <Input

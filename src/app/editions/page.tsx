@@ -1,8 +1,11 @@
 import { EditionsService } from "@/api/editionApi";
 import PageShell from "@/app/components/page-shell";
+import ErrorAlert from "@/app/components/error-alert";
+import EmptyState from "@/app/components/empty-state";
 import { serverAuthProvider } from "@/lib/authProvider";
 import { getEncodedResourceId } from "@/lib/halRoute";
 import { Edition } from "@/types/edition";
+import { parseErrorMessage } from "@/types/errors";
 import Link from "next/link";
 
 function getEditionHref(edition: Edition) {
@@ -54,7 +57,7 @@ export default async function EditionsPage() {
         editions = await service.getEditions();
     } catch (e) {
         console.error("Failed to fetch editions:", e);
-        error = "Failed to load editions.";
+        error = parseErrorMessage(e);
     }
 
     return (
@@ -72,25 +75,24 @@ export default async function EditionsPage() {
                     </p>
                 </div>
 
-                {error && (
-                    <p className="border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
-                        {error}
-                    </p>
-                )}
+                {error && <ErrorAlert message={error} />}
 
                 {!error && editions.length === 0 && (
-                    <p className="border border-border bg-background/80 px-4 py-3 text-sm text-muted-foreground">
-                        No editions found.
-                    </p>
+                    <EmptyState
+                        title="No editions found"
+                        description="There are currently no editions available to display."
+                    />
                 )}
 
-                <ul className="list-grid">
-                    {editions.map((edition, index) => (
-                        <li key={edition.uri ?? index}>
-                            <EditionCard edition={edition} />
-                        </li>
-                    ))}
-                </ul>
+                {!error && editions.length > 0 && (
+                    <ul className="list-grid">
+                        {editions.map((edition, index) => (
+                            <li key={edition.uri ?? index}>
+                                <EditionCard edition={edition} />
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </PageShell>
     );

@@ -1,12 +1,15 @@
 import { EditionsService } from "@/api/editionApi";
+import ErrorAlert from "@/app/components/error-alert";
+import EmptyState from "@/app/components/empty-state";
 import { serverAuthProvider } from "@/lib/authProvider";
 import { getEncodedResourceId } from "@/lib/halRoute";
 import { Edition } from "@/types/edition";
 import { Team } from "@/types/team";
+import { parseErrorMessage, NotFoundError } from "@/types/errors";
 import Link from "next/link";
 
 interface EditionDetailPageProps {
-    params: Promise<{ id: string }>;
+    readonly params: Promise<{ id: string }>;
 }
 
 function getTeamHref(team: Team): string | null {
@@ -26,16 +29,28 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
     const { id } = await props.params;
     const service = new EditionsService(serverAuthProvider);
 
-    const [editionResult, teamsResult] = await Promise.allSettled([
-        service.getEditionById(id),
-        service.getEditionTeams(id),
-    ]);
+    let edition: Edition | null = null;
+    let teams: Team[] = [];
+    let error: string | null = null;
+    let teamsError: string | null = null;
 
-    const edition = editionResult.status === "fulfilled" ? editionResult.value : null;
-    const teams = teamsResult.status === "fulfilled" ? teamsResult.value : [];
-    const error = editionResult.status === "rejected" || teamsResult.status === "rejected"
-        ? "Failed to load this edition."
-        : null;
+    try {
+        edition = await service.getEditionById(id);
+    } catch (e) {
+        console.error("Failed to fetch edition:", e);
+        error = e instanceof NotFoundError 
+            ? "This edition does not exist." 
+            : parseErrorMessage(e);
+    }
+
+    if (edition && !error) {
+        try {
+            teams = await service.getEditionTeams(id);
+        } catch (e) {
+            console.error("Failed to fetch teams:", e);
+            teamsError = parseErrorMessage(e);
+        }
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50">
@@ -49,42 +64,53 @@ export default async function EditionDetailPage(props: Readonly<EditionDetailPag
                         <p className="mt-2 text-sm text-zinc-600">{edition.description}</p>
                     ) : null}
 
-                    {error ? (
-                        <p className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-                            {error}
-                        </p>
-                    ) : null}
+                    {error && (
+                        <div className="mt-6">
+                            <ErrorAlert message={error} />
+                        </div>
+                    )}
 
-                    <h2 className="mt-8 mb-4 text-xl font-semibold">Participating Teams</h2>
+                    {!error && (
+                        <>
+                            <h2 className="mt-8 mb-4 text-xl font-semibold">Participating Teams</h2>
 
-                    {!error && teams.length === 0 ? (
-                        <p className="text-sm text-zinc-500">No teams registered for this edition.</p>
-                    ) : null}
+                            {teamsError && (
+                                <ErrorAlert message={teamsError} />
+                            )}
 
-                    {!error && teams.length > 0 ? (
-                        <ul className="w-full space-y-3">
-                            {teams.map((team, index) => {
-                                const href = getTeamHref(team);
+                            {!teamsError && teams.length === 0 && (
+                                <EmptyState
+                                    title="No teams found"
+                                    description="No teams are registered for this edition yet."
+                                />
+                            )}
 
-                                return (
-                                    <li
-                                        key={team.uri ?? index}
-                                        className="p-4 w-full border rounded-lg bg-white shadow-sm hover:shadow transition dark:bg-black"
-                                    >
-                                        {href ? (
-                                            <Link href={href} className="font-medium">
-                                                {team.name ?? `Team ${index + 1}`}
-                                            </Link>
-                                        ) : (
-                                            <span className="font-medium">
-                                                {team.name ?? `Team ${index + 1}`}
-                                            </span>
-                                        )}
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    ) : null}
+                            {!teamsError && teams.length > 0 && (
+                                <ul className="w-full space-y-3">
+                                    {teams.map((team, index) => {
+                                        const href = getTeamHref(team);
+
+                                        return (
+                                            <li
+                                                key={team.uri ?? index}
+                                                className="p-4 w-full border rounded-lg bg-white shadow-sm hover:shadow transition dark:bg-black"
+                                            >
+                                                {href ? (
+                                                    <Link href={href} className="font-medium">
+                                                        {team.name ?? `Team ${index + 1}`}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="font-medium">
+                                                        {team.name ?? `Team ${index + 1}`}
+                                                    </span>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
         </div>
