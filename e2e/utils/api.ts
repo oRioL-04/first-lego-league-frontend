@@ -75,6 +75,30 @@ export async function createUserViaApi(request: APIRequestContext, user: TestUse
     expect(response.status(), await response.text()).toBe(201);
 }
 
+export async function createAdministratorViaApi(
+    request: APIRequestContext,
+    admin: TestUser
+) {
+    const baseUrl = getApiBaseUrl();
+    const adminUser = getAdminTestUser();
+    assertSafeWriteTarget(baseUrl);
+
+    const response = await request.post(`${baseUrl}/administrators`, {
+        headers: {
+            Accept: "application/hal+json",
+            "Content-Type": "application/json",
+            Authorization: getBasicAuthHeader(adminUser),
+        },
+        data: {
+            id: admin.username,
+            email: admin.email,
+            password: admin.password,
+        },
+    });
+
+    expect(response.status(), await response.text()).toBe(201);
+}
+
 export async function createTeamViaApi(
     request: APIRequestContext,
     team: TestTeam
