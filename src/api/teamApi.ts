@@ -1,5 +1,5 @@
 import type { AuthStrategy } from "@/lib/authProvider";
-import { Team, AVAILABLE_MEMBER_ROLES } from "@/types/team";
+import { Team } from "@/types/team";
 import { User } from "@/types/user";
 import {
     fetchHalCollection,
@@ -38,7 +38,6 @@ export class TeamsService {
         return fetchHalCollection<User>(`/teams/${teamId}/trainedBy`, this.authStrategy, "coaches");
     }
 
-    // EL CAMBIO CLAVE: Ruta directa a members
     async getTeamMembers(teamId: string): Promise<any[]> {
         const safeId = getSafeEncodedId(teamId);
         return fetchHalCollection<any>(

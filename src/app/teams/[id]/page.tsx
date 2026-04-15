@@ -76,7 +76,7 @@ export default async function TeamDetailPage(props: Readonly<TeamDetailPageProps
     );
 
     const coachName = coaches.length > 0
-        ? (coaches[0].name ?? coaches[0].username ?? coaches[0].email ?? "Unnamed coach")
+        ? (coaches[0].username ?? coaches[0].email ?? "Unnamed coach")
         : "No coach assigned";
 
     return (
@@ -101,7 +101,7 @@ export default async function TeamDetailPage(props: Readonly<TeamDetailPageProps
                             isAdmin={isAdmin}
                         />
                     )}
-                    {membersError && <p className="text-red-500 text-sm">{membersError}</p>}
+                    {membersError && <ErrorAlert message={membersError} />}
                 </div>
             </div>
         </div>

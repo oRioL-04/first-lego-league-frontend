@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button } from '@/app/components/button';
-import { AVAILABLE_MEMBER_ROLES, MemberRole } from '@/types/team';
+import { AVAILABLE_MEMBER_ROLES } from '@/types/team';
 
 type AddMemberFormProps = Readonly<{
     onSubmit: (name: string, role: string) => Promise<boolean> | void;
@@ -15,6 +15,8 @@ export function AddMemberForm({
     onCancel,
     isLoading = false
 }: AddMemberFormProps) {
+    const nameInputId = useId();
+    const roleSelectId = useId();
 
     const [name, setName] = useState('');
     const [role, setRole] = useState<string>(AVAILABLE_MEMBER_ROLES[0]);
@@ -37,8 +39,14 @@ export function AddMemberForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-3 border p-4 rounded bg-white dark:bg-zinc-900 shadow-sm">
             <div>
-                <label className="block text-xs font-medium uppercase text-zinc-500 mb-1">Name</label>
+                <label 
+                    htmlFor={nameInputId}
+                    className="block text-xs font-medium uppercase text-zinc-500 mb-1"
+                >
+                    Name
+                </label>
                 <input
+                    id={nameInputId}
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Albert"
@@ -48,8 +56,14 @@ export function AddMemberForm({
             </div>
 
             <div>
-                <label className="block text-xs font-medium uppercase text-zinc-500 mb-1">Role</label>
+                <label 
+                    htmlFor={roleSelectId}
+                    className="block text-xs font-medium uppercase text-zinc-500 mb-1"
+                >
+                    Role
+                </label>
                 <select
+                    id={roleSelectId}
                     value={role}
                     onChange={e => setRole(e.target.value)}
                     className="border p-2 w-full rounded bg-white dark:bg-zinc-800"
