@@ -9,7 +9,10 @@ import { useState, useEffect } from "react";
 export default function Navbar() {
     const pathname = usePathname();
     const { user } = useAuth();
-    const [isDark, setIsDark] = useState(false);
+    const [isDark, setIsDark] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem('theme') === 'dark';
+    });
 
     useEffect(() => {
         const saved = localStorage.getItem('theme')
