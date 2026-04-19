@@ -14,11 +14,6 @@ export default function Navbar() {
         return localStorage.getItem('theme') === 'dark';
     });
 
-    useEffect(() => {
-        const saved = localStorage.getItem('theme')
-        setIsDark(saved === 'dark')
-    }, [])
-
     function toggleTheme() {
         const html = document.documentElement
         if (html.classList.contains('dark')) {
